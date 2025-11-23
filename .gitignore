@@ -1,0 +1,4 @@
+simulator_debug
+simulator_opt
+*.o
+*.opt.o
