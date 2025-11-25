@@ -24,6 +24,10 @@ public:
     int calculateMaxCapacity() override {
         return 100 * 120; 
     }
+    
+    Channel<UserDevice*, 120>* getFirstChannel() {
+        return channels[0];
+    }
 
     bool addUser(UserDevice* user) override {
         // 4G Requirement: 10 messages per user 

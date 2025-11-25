@@ -31,6 +31,18 @@ To run the simulation and view the 5G capacity results:
 
    $ ./simulator_opt
 
+Interactive Mode:
+-----------------
+Upon running the executable, the program will prompt you to enter the number of users 
+to simulate. 
+Example:
+   Enter number of users to simulate: 15000
+
+The simulation will then:
+1. Connect users to the 4G network until it reaches capacity (~12,000 users).
+2. Automatically switch to 5G High-Frequency bands for remaining users.
+3. Generate a final report identifying the users in the first frequency channel.
+
 Input Format
 ------------
 The simulation scenarios are driven by the main driver file (src/main.cpp). The logic instantiates specific generation towers (2G/3G/4G/5G) and simulates user loads to verify capacity and core requirements.

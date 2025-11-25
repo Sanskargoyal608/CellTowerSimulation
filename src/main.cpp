@@ -27,8 +27,9 @@ extern "C" int main() {
     io.outputstring("[SIMULATION START] Connecting users...\n");
     
     int connectedCount = 0;
-    int usersToSimulate = 17000; // Intentionally more than capacity (16800) to show failure
-    
+    io.outputstring("Enter number of users to simulate: ");
+    int usersToSimulate = io.inputint(); 
+    io.outputstring("\n");    
     for (int i = 0; i < usersToSimulate; i++) {
         UserDevice* u = new UserDevice(i);
         
@@ -78,6 +79,21 @@ extern "C" int main() {
     io.outputstring("Computational Requirement: ");
     io.outputint(needed);
     io.outputstring(" Cores needed for stability.\n");
+    io.outputstring("\n[REPORT] Users in First Channel (0-10 kHz):\n");
+    auto* firstChannel = tower->getFirstChannel(); 
 
+    if (firstChannel->getCount() == 0) {
+        io.outputstring("None\n");
+    } else {
+        for (int i = 0; i < firstChannel->getCount(); i++) {
+            UserDevice* u = firstChannel->getUser(i);
+            if (u) {
+                io.outputstring("User");
+                io.outputint(u->getId());
+                io.outputstring(" ");
+            }
+        }
+        io.outputstring("\n");
+    }
     return 0;
 }
