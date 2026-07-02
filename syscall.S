@@ -1,41 +1,37 @@
-section .text
-    ; global _start
-    global syscall3
-    extern main
+// syscall.S – macOS arm64 (Apple Silicon) version
+// Implements syscall3 and syscall6 using the macOS arm64 syscall ABI.
+//
+// macOS arm64 syscall convention:
+//   x16 = syscall number
+//   x0–x5 = arguments 1–6
+//   svc #0x80 triggers the syscall
+//
+// C prototype: long syscall3(long number, long arg1, long arg2, long arg3)
+//   number → x0,  arg1 → x1,  arg2 → x2,  arg3 → x3
+// We move x0 → x16 (syscall number), then shift args down.
 
-;_start:
-;    call main
-;    mov rdi, 60       ; syscall number for exit
-;    xor rsi, rsi      ; status 0
-;    xor rdx, rdx
-;    xor rcx, rcx
-;    call syscall3
+.text
+.global _syscall3
+.global _syscall6
 
-syscall3:
-    mov rax, rdi
-    mov rdi, rsi
-    mov rsi, rdx
-    mov rdx, rcx
-    syscall
+// long syscall3(long number, long arg1, long arg2, long arg3)
+_syscall3:
+    mov  x16, x0          // syscall number
+    mov  x0,  x1          // arg1
+    mov  x1,  x2          // arg2
+    mov  x2,  x3          // arg3
+    svc  #0x80
     ret
 
-global syscall6
-
-syscall6:
-    mov rax, rdi      ; syscall number
-    mov rdi, rsi      ; arg1
-    mov rsi, rdx      ; arg2
-    mov rdx, rcx      ; arg3
-    mov r10, r8       ; arg4
-    mov r8, r9        ; arg5
-    mov r9, [rsp+8]   ; arg6 (from stack)
-    syscall
+// long syscall6(long number, long a1, long a2, long a3, long a4, long a5, long a6)
+// arm64 passes first 8 args in x0–x7
+_syscall6:
+    mov  x16, x0          // syscall number
+    mov  x0,  x1          // arg1
+    mov  x1,  x2          // arg2
+    mov  x2,  x3          // arg3
+    mov  x3,  x4          // arg4
+    mov  x4,  x5          // arg5
+    mov  x5,  x6          // arg6
+    svc  #0x80
     ret
-
-
-global syscall
-syscall:
-    jmp syscall6
-
-
-section .note.GNU-stack noalloc noexec nowrite progbits

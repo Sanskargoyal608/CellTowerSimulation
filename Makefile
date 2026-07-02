@@ -1,53 +1,67 @@
-# Compiler and Assembler
-CXX = g++
-ASM = nasm
+# ================================================================
+#  Makefile — Cellular Network Simulator (OOPD 2025)
+#  Targets: simulator_debug (with symbols) | simulator_opt (O2)
+#
+#  Platform: macOS arm64 (Apple Silicon)
+#  Assembler: Apple clang 'as' (arm64, Mach-O)
+#  Compiler : g++ / clang++
+# ================================================================
 
-# Common Flags
-# -fexceptions: Required for try/catch [cite: 30]
-# -I./include: Tells compiler where header files are
-COMMON_FLAGS = -I./include -fexceptions
+CXX    = g++
+ASM    = as
 
-# Debug Flags: -g for symbols
-CXXFLAGS_DEBUG = -g $(COMMON_FLAGS)
+# -fexceptions: required for try/catch
+# -I./include: header search path
+COMMON_FLAGS   = -I./include -fexceptions
 
-# Optimized Flags: -O2 for speed 
-CXXFLAGS_OPT = -O2 $(COMMON_FLAGS)
+CXXFLAGS_DEBUG = -g   $(COMMON_FLAGS)
+CXXFLAGS_OPT   = -O2  $(COMMON_FLAGS)
 
-# Source Files
+# macOS arm64 assembler flags
+ASMFLAGS = 
+
+# Source files
 SRCS_CPP = src/basicIO.cpp src/main.cpp
 SRCS_ASM = syscall.S
 
-# Object Files (We need separate objects for debug vs opt to avoid conflicts)
-OBJS_DEBUG = $(SRCS_CPP:.cpp=.o) $(SRCS_ASM:.S=.o)
-OBJS_OPT = $(SRCS_CPP:.cpp=.opt.o) $(SRCS_ASM:.S=.opt.o)
+# Object files — separate sets to avoid debug/opt conflicts
+OBJS_DEBUG = $(SRCS_CPP:.cpp=.o)  syscall.o
+OBJS_OPT   = $(SRCS_CPP:.cpp=.opt.o) syscall.opt.o
 
-# Binary Names
 TARGET_DEBUG = simulator_debug
-TARGET_OPT = simulator_opt
+TARGET_OPT   = simulator_opt
 
-# Default Target: Build Both
+# ----------------------------------------------------------------
+# Default: build both
+# ----------------------------------------------------------------
 all: $(TARGET_DEBUG) $(TARGET_OPT)
 
-# --- DEBUG BUILD ---
+# ----------------------------------------------------------------
+# Debug build
+# ----------------------------------------------------------------
 $(TARGET_DEBUG): $(OBJS_DEBUG)
-	$(CXX) $(CXXFLAGS_DEBUG) -o $(TARGET_DEBUG) $(OBJS_DEBUG)
+	$(CXX) $(CXXFLAGS_DEBUG) -o $@ $(OBJS_DEBUG)
 
 src/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS_DEBUG) -c $< -o $@
 
-%.o: %.S
-	$(ASM) -f elf64 $< -o $@
+syscall.o: syscall.S
+	$(ASM) $(ASMFLAGS) -o $@ $<
 
-# --- OPTIMIZED BUILD ---
+# ----------------------------------------------------------------
+# Optimised build
+# ----------------------------------------------------------------
 $(TARGET_OPT): $(OBJS_OPT)
-	$(CXX) $(CXXFLAGS_OPT) -o $(TARGET_OPT) $(OBJS_OPT)
+	$(CXX) $(CXXFLAGS_OPT) -o $@ $(OBJS_OPT)
 
 src/%.opt.o: src/%.cpp
 	$(CXX) $(CXXFLAGS_OPT) -c $< -o $@
 
-%.opt.o: %.S
-	$(ASM) -f elf64 $< -o $@
+syscall.opt.o: syscall.S
+	$(ASM) $(ASMFLAGS) -o $@ $<
 
+# ----------------------------------------------------------------
 # Cleanup
+# ----------------------------------------------------------------
 clean:
 	rm -f src/*.o src/*.opt.o *.o *.opt.o $(TARGET_DEBUG) $(TARGET_OPT)

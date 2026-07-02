@@ -1,10 +1,12 @@
 #include <basicIO.h>
 // #include "BlockStandardIO.h"
 
-#define SYS_READ 0
-#define SYS_WRITE 1
-#define STDIN 0
-#define STDOUT 1
+// macOS BSD syscall numbers (arm64)
+#define SYS_READ  3
+#define SYS_WRITE 4
+#define STDIN     0
+#define STDOUT    1
+#define STDERR    2
 
 
 basicIO io;
@@ -93,7 +95,7 @@ void basicIO::terminate() {
 void basicIO::errorstring(const char* text) {
     long len = 0;
     while (text[len]) ++len;
-    syscall3(SYS_WRITE, 2, (long)text, len);
+    syscall3(SYS_WRITE, STDERR, (long)text, len);
 }
 
 void basicIO::errorint(int number) {
@@ -116,6 +118,6 @@ void basicIO::errorint(int number) {
         }
     }
     for (int j = i - 1; j >= 0; --j) {
-        syscall3(SYS_WRITE, 2, (long)&buffer[j], 1);
+        syscall3(SYS_WRITE, STDERR, (long)&buffer[j], 1);
     }
 }
